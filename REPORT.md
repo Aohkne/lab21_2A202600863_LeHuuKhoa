@@ -1,8 +1,8 @@
 # Lab 21 — Evaluation Report
 
-**Học viên**: <Họ tên> — <MSSV>
+**Học viên**: Lê Hữu Khoa — 2A202600863
 **Ngày nộp**: 2026-06-25
-**Submission option**: C (code-only) — adapters được lưu vào `/content/lab21_lora_t4` trên Colab runtime, không persist vào repo này; mọi số liệu dưới đây verify được trực tiếp qua output đã chạy trong `notebooks/Lab21_LoRA_Finetuning_T4.ipynb`.
+**Submission option**: C (code-only) — `REPORT.md` + `notebooks/Lab21_LoRA_Finetuning_T4.ipynb` + `requirements.txt`. Adapters được lưu vào `/content/lab21_lora_t4` trên Colab runtime, không persist vào repo này; mọi số liệu dưới đây verify được trực tiếp qua output đã chạy trong notebook.
 
 ---
 
@@ -24,9 +24,9 @@
 | 8    | 16    | 1,843,200         | 0.06%   | 4.00 min   | 7.22 GB   | 1.5577    | 4.75       |
 | 16   | 32    | 3,686,400         | 0.12%   | 4.26 min   | 6.62 GB   | 1.5161    | 4.55       |
 | 64   | 128   | 14,745,600        | 0.48%   | 3.99 min   | 8.00 GB   | 1.4768    | 4.38       |
-| Base | -     | -                 | -       | -          | -         | *(không đo định lượng — xem giới hạn ở mục 5)* | - |
+| Base | -     | -                 | -       | -          | -         | *(⚠ cần re-run — xem "Việc còn lại" ở cuối report)* | *(⚠ cần re-run)* |
 
-> Số liệu trích từ `Rank Experiment Summary` (cell 22) trong notebook đã chạy — không phải số mô phỏng.
+> Số liệu trích từ `Rank Experiment Summary` trong notebook đã chạy — không phải số mô phỏng. Hàng **Base** dùng cell mới "2.1 Base model perplexity (no adapter)" (xem `notebooks/Lab21_LoRA_Finetuning_T4.ipynb`) — cần re-run trên GPU để lấy số thật trước khi nộp.
 
 **Quan sát**: train time gần như không đổi giữa 3 ranks (~4.0 min) vì với chỉ 180 examples / 69 steps, thời gian bị chi phối bởi forward/backward của base model 4-bit, không phải kích thước adapter. Peak VRAM của r=16 (6.62 GB) thấp hơn cả r=8 (7.22 GB) — đây nhiều khả năng là nhiễu của memory allocator ở quy mô nhỏ này (chênh lệch tuyệt đối giữa các adapter chỉ vài MB) hơn là một hiệu ứng thật của rank.
 
@@ -87,7 +87,9 @@ Trên dataset 200-sample Vietnamese-Alpaca này, perplexity giảm đều theo r
 
 ---
 
-### Giới hạn của report này
-- Chưa đo perplexity của **base model thuần** (chỉ có so sánh qualitative base vs fine-tuned r=16) — notebook hiện tại không chạy `safe_evaluate()` trên base model trước khi load LoRA. Cần bổ sung cell tính `eval_loss` cho base model để hoàn thiện bảng 4-numbers theo đúng spec rubric.
-- Chỉ có 5/10 test prompts được generate đầy đủ trong lần chạy này (`TEST_PROMPTS` có 10 nhưng output notebook dừng ở prompt 5) — đáp ứng yêu cầu tối thiểu ≥5 nhưng chưa đạt mức khuyến nghị 20.
-- Adapter checkpoints (`r8/`, `r16/`, `r64/`) và file CSV (`rank_experiment_summary.csv`, `qualitative_comparison.csv`) được lưu trong `/content/lab21_lora_t4` trên Colab runtime, chưa được copy về repo này — nếu cần Option A/B, phải re-run và tải file về thủ công.
+### Giới hạn của report này (đã cập nhật)
+- **[FIXED — cần re-run để lấy số]** Notebook đã được bổ sung cell "2.1 Base model perplexity (no adapter)" (ngay sau khi load model, trước khi wrap LoRA) — tính `eval_loss`/`perplexity` của model gốc 4-bit bằng manual eval loop (không dùng lại object `base_model` đã wrap LoRA, vì `wrap_with_lora` có thể mutate in-place). Bảng ở mục 2 và `rank_experiment_summary.csv` giờ có đủ **4 hàng** (base + r8 + r16 + r64) khi chạy lại notebook trên Colab. Report này **chưa** có số thật cho hàng Base vì môi trường viết report không có GPU để re-run — cần điền số vào bảng mục 2 sau khi chạy.
+- **[FIXED]** `TEST_PROMPTS` đã mở rộng từ 10 lên **20 câu** và vòng lặp qualitative giờ chạy qua **toàn bộ 20** (trước đây chỉ generate 5/10). Đáp ứng mức khuyến nghị "20" của rubric thay vì mức tối thiểu "5". 5 examples trình bày ở mục 4 vẫn đủ theo yêu cầu report, chọn từ tập 20 sau khi re-run.
+- Adapter checkpoints (`r8/`, `r16/`, `r64/`) và file CSV (`rank_experiment_summary.csv`, `qualitative_comparison.csv`) được lưu trong `/content/lab21_lora_t4` trên Colab runtime, chưa được copy về repo này. Với Option C (code-only) điều này không bắt buộc — `requirements.txt` đã được thêm vào repo để notebook reproducible; nếu muốn nộp Option A/B, cần re-run và tải file về thủ công.
+
+**Việc còn lại trước khi nộp**: re-run `notebooks/Lab21_LoRA_Finetuning_T4.ipynb` trên Colab (GPU T4) từ đầu, sau đó điền số perplexity/eval_loss thật của hàng Base vào bảng ở mục 2 và xoá dòng "chưa có số thật" ở trên.

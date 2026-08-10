@@ -1,0 +1,24 @@
+# Lab 21 — LoRA Fine-tuning — pinned ranges to reproduce notebooks/Lab21_LoRA_Finetuning_T4.ipynb
+# Install order matters: unsloth first (pulls its own torch/xformers deps), then trl/peft with --no-deps
+# as done in the notebook's setup cell.
+#
+#   pip install --upgrade pip
+#   pip install "unsloth[colab-new] @ git+https://github.com/unslothai/unsloth.git"
+#   pip install --no-deps "trl>=0.12,<0.16" peft accelerate bitsandbytes
+#   pip install -r requirements.txt
+#
+# Tip: after a successful run, `pip freeze > requirements.lock.txt` and ship that alongside
+# this file for byte-exact reproducibility (exact resolved versions depend on the Colab image date).
+
+torch>=2.1
+transformers>=4.46
+trl>=0.12,<0.16
+peft>=0.11
+accelerate>=0.30
+bitsandbytes>=0.43
+datasets>=2.19
+unsloth @ git+https://github.com/unslothai/unsloth.git
+numpy>=1.26
+pandas>=2.0
+matplotlib>=3.8
+seaborn>=0.13
